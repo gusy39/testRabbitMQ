@@ -1,0 +1,37 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+       xsi:schemaLocation="http://www.springframework.org/schema/rabbit
+           http://www.springframework.org/schema/rabbit/spring-rabbit.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context.xsd
+           http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <context:component-scan base-package="com.springTest">
+
+    </context:component-scan>
+    <!--定义连接工厂-->
+    <rabbit:connection-factory id="connectionFactory"
+      host="127.0.0.1" port="5672" username="taobao" password="taobao"
+      virtual-host="/taobao"/>
+    <!--定义队列-->
+    <rabbit:queue name="myQueue" auto-declare="true" />
+    <!--定义交换机-->
+    <!--durable="true"  表示持久化，同队列-->
+    <rabbit:fanout-exchange name="fanoutExchange"auto-declare="true">
+        <rabbit:bindings>
+            <rabbit:binding queue="myQueue"></rabbit:binding>
+        </rabbit:bindings>
+    </rabbit:fanout-exchange>
+    <!--定义模板-->
+    <rabbit:template id="amqpTemplate" connection-factory="connectionFactory"
+    exchange="fanoutExchange"/>
+
+    <rabbit:admin connection-factory="connectionFactory"/>
+    <!--队列监听-->
+    <rabbit:listener-container connection-factory="connectionFactory">
+       <rabbit:listener ref="foo" method="listen" queue-names="myQueue"></rabbit:listener>
+    </rabbit:listener-container>
+
+</beans>
